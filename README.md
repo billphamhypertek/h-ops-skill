@@ -33,8 +33,13 @@ audits, runs commands across, and deploys to any server in your inventory.
 ## Install
 
 ```bash
-npx h-ops-skill init
+npx github:billphamhypertek/h-ops-skill init
 ```
+
+> The repo is public, so this works today with no extra setup. Once the package is
+> published to npm you can use the shorter alias `npx h-ops-skill init` — both run the
+> same installer. Every `npx h-ops-skill <cmd>` below also works as
+> `npx github:billphamhypertek/h-ops-skill <cmd>`.
 
 This installs the skill into `~/.claude/skills/h-ops/` and the `/h-ops` command into
 `~/.claude/commands/`, then walks you through adding your servers (writing `inventory.yml`,
