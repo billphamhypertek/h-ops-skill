@@ -34,3 +34,17 @@ test('init refuses when already installed', async () => {
   const ask = scriptedAsk(['n']);
   await assert.rejects(() => init({ env: { CLAUDE_CONFIG_DIR: cc }, ask, log: () => {} }), /already installed/);
 });
+
+test('init refuses a symlinked (dev) install and writes nothing through it', async () => {
+  const cc = tmpClaude();
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.dirname(skillDir), { recursive: true });
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-repo-'));
+  fs.symlinkSync(repo, skillDir);
+  const ask = scriptedAsk(['n']);
+  await assert.rejects(
+    () => init({ env: { CLAUDE_CONFIG_DIR: cc }, ask, log: () => {} }),
+    /symlink|Dev install/,
+  );
+  assert.deepEqual(fs.readdirSync(repo), [], 'nothing written through the symlink');
+});

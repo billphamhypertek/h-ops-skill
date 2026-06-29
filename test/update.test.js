@@ -13,11 +13,17 @@ test('update overwrites framework but preserves user data', () => {
   fs.mkdirSync(skillDir, { recursive: true });
   fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'OLD');
   fs.writeFileSync(path.join(skillDir, 'inventory.yml'), 'servers:\n  keep: {}\n');
+  fs.mkdirSync(path.join(skillDir, 'references'), { recursive: true });
+  fs.mkdirSync(path.join(skillDir, 'servers'), { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'references/deploy-playbooks.md'), 'MY PLAYBOOK');
+  fs.writeFileSync(path.join(skillDir, 'servers/web.md'), 'MY MANUAL');
 
   update({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {} });
 
   assert.notEqual(fs.readFileSync(path.join(skillDir, 'SKILL.md'), 'utf8'), 'OLD');
   assert.match(fs.readFileSync(path.join(skillDir, 'inventory.yml'), 'utf8'), /keep/);
+  assert.equal(fs.readFileSync(path.join(skillDir, 'references/deploy-playbooks.md'), 'utf8'), 'MY PLAYBOOK');
+  assert.equal(fs.readFileSync(path.join(skillDir, 'servers/web.md'), 'utf8'), 'MY MANUAL');
 });
 
 test('update refuses when not installed', () => {
