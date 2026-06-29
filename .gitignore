@@ -1,0 +1,11 @@
+# --- Real fleet data: NEVER publish (this repo is public) ---
+inventory.yml
+secrets.local.yml
+secrets.local.yaml
+servers/*.md
+!servers/_example.md
+references/deploy-playbooks.md
+
+# --- OS / editor noise ---
+.DS_Store
+*.swp

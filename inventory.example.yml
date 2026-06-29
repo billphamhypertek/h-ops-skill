@@ -1,0 +1,29 @@
+# h-ops fleet inventory — EXAMPLE. Copy to `inventory.yml` and fill in your real servers.
+# `inventory.yml` is gitignored — your real fleet data stays local. NO SECRETS in this file.
+# Each `ssh_alias` must match a `Host` entry in ~/.ssh/config (key-based, passwordless).
+servers:
+  web-prod:
+    host: 203.0.113.10            # example IP (TEST-NET-3, not real)
+    user: ubuntu
+    ssh_alias: web-prod           # must match ~/.ssh/config
+    auth: ssh-key                 # ssh-key | password
+    role: prod                    # prod | dev | staging | backup
+    reverse_proxy: nginx          # nginx | caddy | traefik | none
+    os: "Ubuntu 22.04"
+    tags: [docker, web]
+    notes_file: servers/web-prod.md
+  db-1:
+    host: 203.0.113.20
+    user: root
+    ssh_alias: db-1
+    auth: ssh-key
+    role: dev
+    reverse_proxy: none
+    os: "Ubuntu 24.04"
+    tags: [postgres]
+    notes_file: servers/db-1.md
+
+groups:                           # for selective fan-out (must stay in sync with servers above)
+  prod: [web-prod]
+  dev:  [db-1]
+  all:  [web-prod, db-1]
