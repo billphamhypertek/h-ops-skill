@@ -69,7 +69,7 @@ getent passwd 2>/dev/null | awk -F: '$7 ~ /\/(sh|bash|zsh|fish|ash|dash)$/ {prin
   [ -r "$ak" ] || continue
   while IFS= read -r line || [ -n "$line" ]; do
     case "$line" in ''|\#*) continue ;; esac
-    fp=$(printf '%s\n' "$line" | ssh-keygen -lf - 2>/dev/null | awk '{print $2" ("$NF")"}')
+    fp=$(printf '%s\n' "$line" | ssh-keygen -lf - 2>/dev/null | awk '{c=$3; for(i=4;i<NF;i++) c=c" "$i; print $2" ("c")"}')
     [ -n "$fp" ] && printf '%s\t%s\n' "$u" "$fp"
   done < "$ak"
 done | sort -u | emit_list 1
