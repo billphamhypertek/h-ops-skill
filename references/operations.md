@@ -88,7 +88,7 @@ State files are sensitive-operational: show only the diff/summary in chat, never
   "server": "web-prod",
   "captured_at": "2026-06-29T10:00:00Z",
   "containers": [
-    {"name": "caddy", "image": "caddy:2.7", "restart": "always", "ports": ["80", "443"]}
+    {"name": "caddy", "image": "caddy:2.7", "restart": "always", "ports": ["0.0.0.0:80->80/tcp", "0.0.0.0:443->443/tcp"]}
   ],
   "network": {
     "listening": ["0.0.0.0:443", "127.0.0.1:5432"],
@@ -98,7 +98,7 @@ State files are sensitive-operational: show only the diff/summary in chat, never
     "shell_users": ["ubuntu"],
     "sudo": ["ubuntu"],
     "authorized_keys": {"ubuntu": ["SHA256:abc123 (laptop)"]},
-    "sshd": {"PasswordAuthentication": "no", "PermitRootLogin": "no"}
+    "sshd": {"passwordauthentication": "no", "permitrootlogin": "no", "pubkeyauthentication": "yes"}
   },
   "system": {
     "kernel": "6.8.0-31",
@@ -133,7 +133,7 @@ TAB-separated; list sections are pre-sorted. A section body of `(none)` is an em
 | `[ACCESS.SHELL_USERS]` | `access.shell_users[]` |
 | `[ACCESS.SUDO]` | `access.sudo[]` |
 | `[ACCESS.AUTHORIZED_KEYS]` | `access.authorized_keys` = `{<user>: ["SHA256:… (comment)", …]}` |
-| `[ACCESS.SSHD]` | `access.sshd` = `{<Field>: <value>}` |
+| `[ACCESS.SSHD]` | `access.sshd` = `{<field>: <value>}` — the three lowercase `sshd -T` keys: `passwordauthentication`, `permitrootlogin`, `pubkeyauthentication` |
 | `[SYSTEM.KERNEL]` | `system.kernel` |
 | `[SYSTEM.PACKAGES_SECURITY]` | `system.packages_security[]` = `{name, version}` |
 | `[SYSTEM.PACKAGES_ALL_HASH]` | `system.packages_all_hash` |
@@ -160,7 +160,7 @@ with `/`) under that heading and pass them as extra args: `scripts/snapshot.sh <
 
 - 🔴 **CONCERNING** — new sudo member; new `authorized_keys` fingerprint; new listening port on a
   public (`0.0.0.0`/non-loopback) address; firewall rule removed or loosened;
-  `PasswordAuthentication`/`PermitRootLogin` re-enabled; checksum change on a security-sensitive
+  `passwordauthentication`/`permitrootlogin` re-enabled, or `pubkeyauthentication` disabled; checksum change on a security-sensitive
   config file (`sshd_config`, `/etc/sudoers`); new cron job / systemd timer.
 - 🟡 **NOTABLE** — container image tag bump (often an expected deploy); a new container that may be
   intentional; non-security package version change.
