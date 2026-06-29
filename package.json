@@ -1,0 +1,25 @@
+{
+  "name": "h-ops-skill",
+  "version": "0.1.0",
+  "description": "Installer for the h-ops Claude Code skill — inventory-driven DevOps toolkit for a self-managed server fleet.",
+  "type": "module",
+  "bin": { "h-ops-skill": "bin/cli.js" },
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test" },
+  "dependencies": { "yaml": "^2" },
+  "files": [
+    "bin/",
+    "src/",
+    "SKILL.md",
+    "scripts/",
+    "references/operations.md",
+    "references/deploy-playbooks.example.md",
+    "inventory.example.yml",
+    "servers/_example.md",
+    "commands/h-ops.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/billphamhypertek/h-ops-skill.git" }
+}

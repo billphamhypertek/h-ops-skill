@@ -30,17 +30,38 @@ audits, runs commands across, and deploys to any server in your inventory.
 - Connection uses your existing key-based SSH config (`~/.ssh/config` aliases). Read-only operations
   run freely; mutating operations on `prod` require confirmation.
 
-## Install (manual, for now)
+## Install
+
+```bash
+npx h-ops-skill init
+```
+
+This installs the skill into `~/.claude/skills/h-ops/` and the `/h-ops` command into
+`~/.claude/commands/`, then walks you through adding your servers (writing `inventory.yml`,
+per-server manuals, and suggested `~/.ssh/config` snippets — it never edits your ssh config).
+
+### Installer commands
+
+| Command | What it does |
+|---------|--------------|
+| `npx h-ops-skill init` | First-time install + interactive fleet wizard. |
+| `npx h-ops-skill add-server` | Add one server to an existing inventory. |
+| `npx h-ops-skill update` | Refresh framework files only — never touches your fleet data. |
+| `npx h-ops-skill doctor` | Check deps, install, and that each `ssh_alias` has a `Host` in `~/.ssh/config` (`--connect` also tests reachability). |
+| `npx h-ops-skill uninstall` | Remove the skill (keeps fleet data by default; `--purge` deletes everything). |
+
+Respects `CLAUDE_CONFIG_DIR` if you've relocated `~/.claude`.
+
+### Dev / manual install (contributors)
 
 ```bash
 git clone https://github.com/billphamhypertek/h-ops-skill.git
 ln -s "$PWD/h-ops-skill" ~/.claude/skills/h-ops
 ln -s "$PWD/h-ops-skill/commands/h-ops.md" ~/.claude/commands/h-ops.md
 cp ~/.claude/skills/h-ops/inventory.example.yml ~/.claude/skills/h-ops/inventory.yml
-# then edit inventory.yml with your servers (ssh_alias must match ~/.ssh/config)
 ```
 
-An `npx` installer is planned to automate this.
+(`update`/`uninstall` detect a symlinked install and won't clobber your repo.)
 
 ## Configure your fleet
 
@@ -55,6 +76,7 @@ are gitignored.
 
 ## Requirements
 
+- Node.js ≥ 18 (only for the `npx` installer; the skill itself is pure bash/ssh).
 - Claude Code, `bash`, `ssh`, and (for the aligned overview table) `column` — all standard on macOS/Linux.
 - Key-based SSH access to your servers via `~/.ssh/config` aliases.
 
