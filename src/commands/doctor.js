@@ -13,7 +13,10 @@ function which(cmd) {
 
 export function doctor({ env = process.env, log = console.log, connect = false, sshConfigPath = path.join(os.homedir(), '.ssh', 'config') } = {}) {
   const checks = [];
-  const add = (ok, label) => { checks.push({ ok, label }); log(`${ok ? '✓' : '✗'} ${label}`); };
+  const add = (ok, label, { fatal = true } = {}) => {
+    checks.push({ ok, label, fatal });
+    log(`${ok ? '✓' : fatal ? '✗' : '•'} ${label}`);
+  };
 
   for (const tool of ['ssh', 'bash', 'column', 'openssl']) add(which(tool), `tool: ${tool}`);
   add(which('rsync'), 'tool: rsync (needed only for deploy)');
@@ -45,7 +48,19 @@ export function doctor({ env = process.env, log = console.log, connect = false, 
     }
   }
 
-  const failed = checks.filter((c) => !c.ok).length;
-  log(`\n${checks.length - failed}/${checks.length} checks passed.`);
+  const stateDir = path.join(skillDir, 'state');
+  if (fs.existsSync(stateDir)) {
+    let writable = true;
+    try { fs.accessSync(stateDir, fs.constants.W_OK); } catch { writable = false; }
+    add(writable,
+      writable ? `state/ writable (${stateDir})` : `state/ exists but is NOT writable (${stateDir})`,
+      { fatal: false });
+  } else {
+    add(true, 'state/ not created yet — created on first snapshot', { fatal: false });
+  }
+
+  const failed = checks.filter((c) => c.fatal && !c.ok).length;
+  const passed = checks.filter((c) => c.ok).length;
+  log(`\n${passed}/${checks.length} checks passed.`);
   return { ok: failed === 0, checks };
 }
