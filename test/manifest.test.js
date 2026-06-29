@@ -23,3 +23,13 @@ test('isUserDataServerManual distinguishes example from real manuals', () => {
   assert.equal(isUserDataServerManual('servers/_example.md'), false);
   assert.equal(isUserDataServerManual('SKILL.md'), false);
 });
+
+// The update-safety contract: nothing the installer overwrites (SKILL_FILES) may be a user-data
+// file. This makes USER_DATA_FILES / isUserDataServerManual a real consumer that fails loudly if a
+// future edit ever adds a user-owned path to the framework-copy set.
+test('SKILL_FILES never overlaps user-data files (update-safety invariant)', () => {
+  for (const f of SKILL_FILES) {
+    assert.equal(USER_DATA_FILES.includes(f.path), false, `${f.path} must not be in USER_DATA_FILES`);
+    assert.equal(isUserDataServerManual(f.path), false, `${f.path} must not classify as a user manual`);
+  }
+});

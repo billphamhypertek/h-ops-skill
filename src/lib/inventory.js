@@ -5,6 +5,11 @@ const HEADER = `# h-ops fleet inventory — SINGLE SOURCE OF TRUTH. NO SECRETS H
 
 const ROLE_ORDER = ['prod', 'staging', 'dev', 'backup'];
 
+// Two construction styles on purpose:
+//   renderInventory  — builds the first-install file from scratch, emitting the HEADER banner and a
+//                      deterministic layout. There are no existing comments to preserve.
+//   addServer (below) — edits an EXISTING document through the yaml AST so the user's own comments
+//                      and formatting survive. Both emit valid YAML; do not collapse them into one.
 export function renderInventory(servers) {
   const lines = [HEADER, 'servers:'];
   for (const s of servers) {

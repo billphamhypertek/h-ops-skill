@@ -8,8 +8,12 @@ function removeFrameworkOnly(skillDir) {
     const p = path.join(skillDir, f.path);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   }
-  const scriptsDir = path.join(skillDir, 'scripts');
-  try { if (fs.readdirSync(scriptsDir).length === 0) fs.rmdirSync(scriptsDir); } catch {}
+  // Drop framework subdirs once their framework files are gone — but only if empty, so a dir that
+  // still holds user data (servers/<name>.md, references/deploy-playbooks.md) is left intact.
+  for (const dir of ['scripts', 'references', 'servers']) {
+    const p = path.join(skillDir, dir);
+    try { if (fs.readdirSync(p).length === 0) fs.rmdirSync(p); } catch {}
+  }
 }
 
 export async function uninstall({ env = process.env, ask, log = console.log, purge = false, yes = false } = {}) {
