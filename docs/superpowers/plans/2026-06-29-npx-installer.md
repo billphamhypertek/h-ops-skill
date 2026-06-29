@@ -627,7 +627,7 @@ export function addServer(text, server) {
   if (!groups) { doc.set('groups', {}); groups = doc.get('groups'); }
   for (const key of [server.role, 'all']) {
     let seq = groups.get(key);
-    if (!seq) { groups.set(key, []); seq = groups.get(key); }
+    if (!seq) { seq = doc.createNode([]); groups.set(key, seq); }
     const has = seq.items.some((it) => (it && it.value !== undefined ? it.value : it) === server.ssh_alias);
     if (!has) seq.add(server.ssh_alias);
     seq.flow = true;
