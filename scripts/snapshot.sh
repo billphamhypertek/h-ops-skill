@@ -27,14 +27,16 @@ printf 'hostname\t%s\n' "$(hostname 2>/dev/null || echo '?')"
 
 echo "[CONTAINERS]"
 if command -v docker >/dev/null 2>&1; then
-  for c in $(docker ps -q 2>/dev/null); do
-    name=$(docker inspect -f '{{.Name}}' "$c" 2>/dev/null | sed 's#^/##')
-    image=$(docker inspect -f '{{.Config.Image}}' "$c" 2>/dev/null)
-    restart=$(docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' "$c" 2>/dev/null)
-    ports=$(docker inspect -f '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}} {{end}}{{end}}' "$c" 2>/dev/null \
-            | tr ' ' '\n' | grep -v '^$' | sort -u | paste -sd, -)
-    printf '%s\t%s\t%s\t%s\n' "$name" "$image" "${restart:-no}" "$ports"
-  done | sort | emit_list 0
+  if docker info >/dev/null 2>&1; then
+    for c in $(docker ps -q 2>/dev/null); do
+      name=$(docker inspect -f '{{.Name}}' "$c" 2>/dev/null | sed 's#^/##')
+      image=$(docker inspect -f '{{.Config.Image}}' "$c" 2>/dev/null)
+      restart=$(docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' "$c" 2>/dev/null)
+      ports=$(docker inspect -f '{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}}:{{.HostPort}}->{{$p}} {{end}}{{end}}' "$c" 2>/dev/null \
+              | tr ' ' '\n' | grep -v '^$' | sort -u | paste -sd, -)
+      printf '%s\t%s\t%s\t%s\n' "$name" "$image" "${restart:-no}" "$ports"
+    done | sort | emit_list 0
+  else echo "(unavailable: needs root)"; fi
 else echo "(unavailable)"; fi
 
 echo "[NETWORK.LISTENING]"
@@ -45,7 +47,7 @@ else echo "(unavailable)"; fi
 
 echo "[NETWORK.FIREWALL]"
 if command -v ufw >/dev/null 2>&1 && ufw status >/dev/null 2>&1; then
-  printf 'backend\tufw\n'; ufw status 2>/dev/null | awk 'NR>1 && NF' | sort
+  printf 'backend\tufw\n'; ufw status 2>/dev/null | awk 'NR>1 && NF && $1!="To" && $1 !~ /^-+$/' | sort
 elif command -v nft >/dev/null 2>&1 && nft list ruleset >/dev/null 2>&1; then
   printf 'backend\tnft\n'; nft list ruleset 2>/dev/null | sed 's/[[:space:]]\{1,\}/ /g;s/^ //;s/ $//' | grep -vE '^$' | sort
 elif command -v iptables >/dev/null 2>&1 && iptables -S >/dev/null 2>&1; then
