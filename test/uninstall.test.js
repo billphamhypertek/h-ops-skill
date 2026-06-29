@@ -34,6 +34,32 @@ test('uninstall keeps user data by default', async () => {
   assert.ok(fs.existsSync(path.join(skillDir, 'inventory.yml')), 'user data preserved');
 });
 
+test('uninstall (keep data) drops emptied framework dirs but keeps dirs holding user data', async () => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.join(skillDir, 'scripts'), { recursive: true });
+  fs.mkdirSync(path.join(skillDir, 'references'), { recursive: true });
+  fs.mkdirSync(path.join(skillDir, 'servers'), { recursive: true });
+
+  // framework payload
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'x');
+  fs.writeFileSync(path.join(skillDir, 'scripts', 'overview.sh'), '#');
+  fs.writeFileSync(path.join(skillDir, 'references', 'operations.md'), 'x');
+  fs.writeFileSync(path.join(skillDir, 'references', 'deploy-playbooks.example.md'), 'x');
+  fs.writeFileSync(path.join(skillDir, 'servers', '_example.md'), 'x');
+  // user data
+  fs.writeFileSync(path.join(skillDir, 'inventory.yml'), 'servers: {}\n');
+  fs.writeFileSync(path.join(skillDir, 'servers', 'web.md'), 'mine');
+  fs.writeFileSync(path.join(skillDir, 'references', 'deploy-playbooks.md'), 'mine');
+
+  await uninstall({ env: { CLAUDE_CONFIG_DIR: cc }, ask: noAsk(), log: () => {}, yes: true });
+
+  assert.equal(fs.existsSync(path.join(skillDir, 'scripts')), false, 'emptied scripts/ removed');
+  assert.ok(fs.existsSync(path.join(skillDir, 'servers', 'web.md')), 'user manual kept');
+  assert.ok(fs.existsSync(path.join(skillDir, 'references', 'deploy-playbooks.md')), 'user playbook kept');
+  assert.ok(fs.existsSync(path.join(skillDir, 'inventory.yml')), 'inventory kept');
+});
+
 test('uninstall --purge removes everything', async () => {
   const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
   const skillDir = path.join(cc, 'skills', 'h-ops');

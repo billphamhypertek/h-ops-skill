@@ -17,6 +17,10 @@ export const SKILL_FILES = [
 export const COMMAND_SRC = 'commands/h-ops.md';
 
 // User-owned files: never overwritten by `update`; preserved by `uninstall` unless --purge.
+// The protection is *structural*: `update`/`copyFramework` only ever writes SKILL_FILES, which is
+// disjoint from this list and from real server manuals. These two exports document that contract
+// and let the test suite enforce it (manifest.test.js asserts SKILL_FILES never overlaps user data).
+// `relPath` here is always posix-style (forward slashes), as produced by the manifest itself.
 export const USER_DATA_FILES = [
   'inventory.yml',
   'references/deploy-playbooks.md',

@@ -10,7 +10,9 @@ import { atomicWrite } from '../lib/copy.js';
 
 export async function init({ env = process.env, ask, log = console.log } = {}) {
   const { skillDir, commandPath } = getPaths(env);
-  if (fs.existsSync(path.join(skillDir, 'inventory.yml'))) {
+  // Key the guard on the install marker (SKILL.md), not just inventory.yml, so a prior 0-server
+  // init still counts as installed — consistent with how `doctor`/`uninstall` detect an install.
+  if (fs.existsSync(path.join(skillDir, 'SKILL.md')) || fs.existsSync(path.join(skillDir, 'inventory.yml'))) {
     throw new Error('h-ops already installed. Use `update` to refresh or `add-server` to add a server.');
   }
   if (fs.existsSync(skillDir) && fs.lstatSync(skillDir).isSymbolicLink()) {
@@ -38,7 +40,8 @@ export async function init({ env = process.env, ask, log = console.log } = {}) {
     log('\nSuggested ~/.ssh/config entries (add these yourself — not auto-edited):\n');
     for (const s of servers) log(renderSnippet(s) + '\n');
   } else {
-    log('\nNo servers added. Copy inventory.example.yml → inventory.yml and edit it.');
+    log('\nNo servers added. Run `npx h-ops-skill add-server` when ready (it will create inventory.yml),');
+    log('or copy inventory.example.yml → inventory.yml and edit it by hand.');
   }
   log('Next: edit servers/*.md landmines, then run `npx h-ops-skill doctor`.');
   return servers;
