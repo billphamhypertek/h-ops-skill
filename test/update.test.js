@@ -39,3 +39,16 @@ test('update refuses a symlinked (dev) install', () => {
   fs.symlinkSync(repo, skillDir);
   assert.throws(() => update({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {} }), /symlink|Dev install/);
 });
+
+test('update preserves the state/ directory (drift baselines)', () => {
+  const cc = tmpClaude();
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.join(skillDir, 'state'), { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'OLD');
+  fs.writeFileSync(path.join(skillDir, 'state', 'web.baseline.json'), '{"server":"web"}');
+
+  update({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {} });
+
+  assert.equal(fs.readFileSync(path.join(skillDir, 'state', 'web.baseline.json'), 'utf8'), '{"server":"web"}');
+  assert.notEqual(fs.readFileSync(path.join(skillDir, 'SKILL.md'), 'utf8'), 'OLD');
+});

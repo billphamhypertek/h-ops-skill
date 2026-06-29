@@ -33,3 +33,9 @@ test('SKILL_FILES never overlaps user-data files (update-safety invariant)', () 
     assert.equal(isUserDataServerManual(f.path), false, `${f.path} must not classify as a user manual`);
   }
 });
+
+test('SKILL_FILES ships snapshot.sh as an executable framework file', () => {
+  const snap = SKILL_FILES.find((f) => f.path === 'scripts/snapshot.sh');
+  assert.ok(snap, 'snapshot.sh must be a framework file');
+  assert.equal(snap.exec, true);
+});

@@ -5,6 +5,7 @@ export const SKILL_FILES = [
   { path: 'scripts/run.sh', exec: true },
   { path: 'scripts/health.sh', exec: true },
   { path: 'scripts/audit.sh', exec: true },
+  { path: 'scripts/snapshot.sh', exec: true },
   { path: 'references/operations.md' },
   { path: 'references/deploy-playbooks.example.md' },
   { path: 'inventory.example.yml' },
