@@ -9,3 +9,6 @@ references/deploy-playbooks.md
 # --- OS / editor noise ---
 .DS_Store
 *.swp
+
+# npm
+node_modules/
