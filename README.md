@@ -17,6 +17,9 @@ audits, runs commands across, and deploys to any server in your inventory.
 | `/h-ops run <srv\|group\|all> "<cmd>"` | Run a command on one server or fan it out across a group. |
 | `/h-ops audit [srv\|all]` | Security/ops audit: open ports, sudoers, pending updates, disk, root containers. |
 | `/h-ops deploy <srv>` | Run an app-specific deploy playbook (confirms before acting on prod). |
+| `/h-ops snapshot <srv\|group\|all>` | Capture a blessed baseline of each server's security-relevant state (containers, ports, firewall, accounts, SSH-key fingerprints, config checksums). |
+| `/h-ops drift <srv\|group\|all>` | Compare live state vs the baseline and flag unexpected changes by severity (🔴/🟡/🟢). |
+| `/h-ops accept <srv> [--only <section>]` | Bless reviewed changes into the baseline (tripwire); shows the diff and confirms first. |
 
 ## How it works
 
@@ -29,6 +32,9 @@ audits, runs commands across, and deploys to any server in your inventory.
   landmines, playbooks).
 - Connection uses your existing key-based SSH config (`~/.ssh/config` aliases). Read-only operations
   run freely; mutating operations on `prod` require confirmation.
+- **Change detection (tripwire):** `snapshot` writes a blessed baseline and `drift` flags anything
+  that changed until you `accept` it. State lives in `state/<name>.{baseline,current}.json` — local,
+  gitignored, and never published (it holds a real-fleet fingerprint).
 
 ## Install
 
@@ -76,8 +82,8 @@ cp ~/.claude/skills/h-ops/inventory.example.yml ~/.claude/skills/h-ops/inventory
    landmines.
 3. For deploys, copy `references/deploy-playbooks.example.md` → `references/deploy-playbooks.md`.
 
-All of `inventory.yml`, `servers/<name>.md`, `references/deploy-playbooks.md`, and `secrets.local.yml`
-are gitignored.
+All of `inventory.yml`, `servers/<name>.md`, `references/deploy-playbooks.md`, `secrets.local.yml`,
+and `state/` are gitignored.
 
 ## Requirements
 

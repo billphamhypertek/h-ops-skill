@@ -24,3 +24,31 @@ test('doctor flags an ssh alias missing from ssh config', () => {
   assert.equal(byLabel['~/.ssh/config has Host db'], false);
   assert.equal(r.ok, false); // at least the missing alias fails
 });
+
+test('doctor reports state/ as a non-fatal check', () => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'x');
+  const sshCfg = path.join(cc, 'ssh_config');
+  fs.writeFileSync(sshCfg, '');
+
+  const r = doctor({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {}, sshConfigPath: sshCfg });
+  const stateCheck = r.checks.find((c) => /state\//.test(c.label));
+  assert.ok(stateCheck, 'a state/ check is present');
+  assert.equal(stateCheck.fatal, false);
+});
+
+test('doctor sees an existing writable state/ dir', () => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.join(skillDir, 'state'), { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'x');
+  const sshCfg = path.join(cc, 'ssh_config');
+  fs.writeFileSync(sshCfg, '');
+
+  const r = doctor({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {}, sshConfigPath: sshCfg });
+  const stateCheck = r.checks.find((c) => /state\//.test(c.label));
+  assert.equal(stateCheck.ok, true);
+  assert.match(stateCheck.label, /writable/);
+});

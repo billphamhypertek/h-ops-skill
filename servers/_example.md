@@ -23,3 +23,9 @@
 ## Operational playbooks
 - Quick health: `ssh <ssh_alias> 'uptime; df -h /; free -h; docker ps'`.
 - Repeatable steps for routine ops (redeploys, restarts) — confirm first on prod.
+
+## Snapshot — extra config checksums (optional)
+- Extra absolute file paths for `snapshot`/`drift` to checksum, one per line, in addition to the
+  built-in set (reverse-proxy config, `sshd_config`, `/etc/sudoers`). Example:
+  - /etc/fail2ban/jail.local
+  - /etc/myapp/app.conf
