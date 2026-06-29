@@ -35,3 +35,12 @@ test('addServer rejects duplicate alias', () => {
   const text = renderInventory([web]);
   assert.throws(() => addServer(text, web), /already exists/);
 });
+
+test('addServer adds the first server to an empty inventory', () => {
+  const empty = renderInventory([]); // servers: empty, groups: all: []
+  const next = addServer(empty, web);
+  const obj = YAML.parse(next);
+  assert.deepEqual(Object.keys(obj.servers), ['web']);
+  assert.deepEqual(obj.groups.all, ['web']);
+  assert.deepEqual(obj.groups.prod, ['web']);
+});

@@ -35,7 +35,7 @@ export function parseInventory(text) {
 export function addServer(text, server) {
   const doc = YAML.parseDocument(text);
   let servers = doc.get('servers');
-  if (!servers) { doc.set('servers', {}); servers = doc.get('servers'); }
+  if (!servers) { servers = doc.createNode({}); doc.set('servers', servers); }
   if (servers.has(server.ssh_alias)) {
     throw new Error(`Server "${server.ssh_alias}" already exists in inventory.`);
   }
@@ -55,7 +55,7 @@ export function addServer(text, server) {
   servers.set(server.ssh_alias, node);
 
   let groups = doc.get('groups');
-  if (!groups) { doc.set('groups', {}); groups = doc.get('groups'); }
+  if (!groups) { groups = doc.createNode({}); doc.set('groups', groups); }
   for (const key of [server.role, 'all']) {
     let seq = groups.get(key);
     if (!seq) { seq = doc.createNode([]); groups.set(key, seq); }
