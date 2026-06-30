@@ -6,10 +6,10 @@
 # Output grammar is documented in references/operations.md (Claude parses it into the state JSON).
 set -uo pipefail
 [ $# -lt 1 ] && { echo "usage: $0 <ssh_alias> [extra_config_path ...]" >&2; exit 2; }
-alias="$1"; shift
+ssh_alias="$1"; shift
 SSH_OPTS=(-o ConnectTimeout=8 -o BatchMode=yes -o StrictHostKeyChecking=accept-new)
 
-ssh "${SSH_OPTS[@]}" "$alias" bash -s -- "$@" <<'EOF' || { echo "UNREACHABLE: $alias" >&2; exit 1; }
+ssh "${SSH_OPTS[@]}" "$ssh_alias" bash -s -- "$@" <<'EOF' || { echo "UNREACHABLE: $ssh_alias" >&2; exit 1; }
 export LC_ALL=C
 if [ "$(id -u 2>/dev/null)" = "0" ]; then IS_ROOT=1; else IS_ROOT=0; fi
 
