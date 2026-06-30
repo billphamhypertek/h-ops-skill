@@ -59,8 +59,12 @@ export function doctor({ env = process.env, log = console.log, connect = false, 
     add(true, 'state/ not created yet — created on first snapshot', { fatal: false });
   }
 
-  const failed = checks.filter((c) => c.fatal && !c.ok).length;
-  const passed = checks.filter((c) => c.ok).length;
-  log(`\n${passed}/${checks.length} checks passed.`);
-  return { ok: failed === 0, checks };
+  const requiredTotal = checks.filter((c) => c.fatal).length;
+  const requiredPassed = checks.filter((c) => c.fatal && c.ok).length;
+  const advisories = checks.filter((c) => !c.fatal && !c.ok).length;
+  const advisoryNote = advisories
+    ? ` (${advisories} advisory warning${advisories === 1 ? '' : 's'})`
+    : '';
+  log(`\n${requiredPassed}/${requiredTotal} required checks passed${advisoryNote}.`);
+  return { ok: requiredPassed === requiredTotal, checks };
 }

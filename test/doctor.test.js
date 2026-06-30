@@ -77,3 +77,34 @@ test('doctor reports a non-writable state/ as advisory (does not flip the verdic
   // non-writable state/ can never flip it.
   assert.equal(r.ok, r.checks.filter((c) => c.fatal && !c.ok).length === 0);
 });
+
+test('doctor summary counts required checks and surfaces advisories separately', (t) => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.join(skillDir, 'state'), { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'x');
+  const sshCfg = path.join(cc, 'ssh_config');
+  fs.writeFileSync(sshCfg, '');
+
+  t.mock.method(fs, 'accessSync', () => {
+    throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+  });
+
+  const logs = [];
+  const r = doctor({ env: { CLAUDE_CONFIG_DIR: cc }, log: (s) => logs.push(s), sshConfigPath: sshCfg });
+
+  const summary = logs.find((l) => /checks passed/.test(l));
+  assert.ok(summary, 'a summary line is logged');
+  assert.match(summary, /required checks passed/);
+  // exactly one non-fatal failure exists (the non-writable state/), surfaced separately, singular
+  assert.match(summary, /\(1 advisory warning\)/);
+
+  const m = summary.match(/(\d+)\/(\d+) required checks passed/);
+  assert.ok(m, 'summary headline is "N/M required checks passed"');
+  const [, passedStr, totalStr] = m;
+  // denominator is the count of REQUIRED (fatal) checks — the advisory is excluded
+  assert.equal(Number(totalStr), r.checks.filter((c) => c.fatal).length);
+  assert.equal(Number(passedStr), r.checks.filter((c) => c.fatal && c.ok).length);
+  // verdict agrees with the displayed ratio (the contradiction is gone)
+  assert.equal(r.ok, Number(passedStr) === Number(totalStr));
+});
