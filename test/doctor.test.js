@@ -52,3 +52,28 @@ test('doctor sees an existing writable state/ dir', () => {
   assert.equal(stateCheck.ok, true);
   assert.match(stateCheck.label, /writable/);
 });
+
+test('doctor reports a non-writable state/ as advisory (does not flip the verdict)', (t) => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), 'hops-cc-'));
+  const skillDir = path.join(cc, 'skills', 'h-ops');
+  fs.mkdirSync(path.join(skillDir, 'state'), { recursive: true });
+  fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'x');
+  const sshCfg = path.join(cc, 'ssh_config');
+  fs.writeFileSync(sshCfg, '');
+
+  // Force the "exists but NOT writable" branch deterministically — chmod 0o500
+  // is bypassed by root, so a root CI runner would give a false green.
+  t.mock.method(fs, 'accessSync', () => {
+    throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+  });
+
+  const r = doctor({ env: { CLAUDE_CONFIG_DIR: cc }, log: () => {}, sshConfigPath: sshCfg });
+  const stateCheck = r.checks.find((c) => /state\//.test(c.label));
+  assert.ok(stateCheck, 'a state/ check is present');
+  assert.equal(stateCheck.ok, false);
+  assert.equal(stateCheck.fatal, false);
+  assert.match(stateCheck.label, /NOT writable/);
+  // advisory-only: the verdict is derived solely from fatal checks, so a
+  // non-writable state/ can never flip it.
+  assert.equal(r.ok, r.checks.filter((c) => c.fatal && !c.ok).length === 0);
+});
